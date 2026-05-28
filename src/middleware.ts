@@ -31,8 +31,8 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Protect /app and all nested routes
-  if (pathname.startsWith("/app") && !user) {
+  // Protect /app and /learn (and all nested routes)
+  if ((pathname.startsWith("/app") || pathname.startsWith("/learn")) && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
