@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 
@@ -33,6 +34,20 @@ export default async function AppPage() {
               ? new Date(user.last_sign_in_at).toLocaleString()
               : "—"}
           </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Link
+            href="/learn"
+            className="w-full rounded-lg bg-zinc-900 px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-zinc-700"
+          >
+            Start a session →
+          </Link>
+          <Link
+            href="/library"
+            className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+          >
+            Your library
+          </Link>
         </div>
         <SignOutButton />
       </div>

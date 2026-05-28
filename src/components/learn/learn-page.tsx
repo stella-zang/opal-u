@@ -3,6 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { type UIMessage, type TextUIPart, DefaultChatTransport } from "ai";
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 const MAX_USER_TURNS = 5;
@@ -18,6 +19,9 @@ export function LearnPage() {
   const [topic, setTopic] = useState("");
   const [started, setStarted] = useState(false);
   const [reply, setReply] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const router = useRouter();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status } = useChat({
@@ -45,6 +49,25 @@ export function LearnPage() {
     if (!reply.trim() || isStreaming || sessionComplete) return;
     sendMessage({ parts: [{ type: "text", text: reply.trim() }] });
     setReply("");
+  };
+
+  const handleSave = async () => {
+    if (saving || savedId || messages.length === 0) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic, transcript: messages }),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      const { id } = await res.json();
+      setSavedId(id);
+      router.push(`/learn/${id}`);
+    } catch {
+      setSaving(false);
+      alert("Failed to save session. Please try again.");
+    }
   };
 
   if (!started) {
@@ -180,11 +203,10 @@ export function LearnPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                alert("Session saving coming in the next release (OPA-5)")
-              }
+              onClick={handleSave}
+              disabled={saving || !!savedId || messages.length === 0}
             >
-              Save this session
+              {saving ? "Saving…" : savedId ? "Saved!" : "Save this session"}
             </Button>
           </div>
         </div>
